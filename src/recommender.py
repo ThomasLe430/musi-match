@@ -225,18 +225,48 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
     Functional implementation of the recommendation logic.
     Required by generate_explanation() and src/main.py
     """
-    scored = []
-    for song in songs:
-        score, reasons = score_song(user_prefs, song)
-        explanation = ", ".join(reasons) if reasons else "No strong matches"
-        scored.append((song, score, explanation))
-
+    scored = [(song, *score_song(user_prefs, song)) for song in songs]
     scored.sort(key=lambda item: item[1], reverse=True)
-    return scored[:k]
+
+    top = scored[:k]
+    return [
+        (song, score, generate_explanation(user_prefs=user_prefs, recommendation=(song, score)))
+        for song, score, _reasons in top
+    ]
 
 # TODO: Implement
-def generate_explanation(songs: List[Tuple[Dict, float, str]]):
+def generate_explanation(recommendation: Tuple[Dict, float], user_prefs: Dict) -> str:
     '''
-    LLM call to create a friendly explanation of the songs recommendation
+    LLM call to create a friendly explanation of the song recommendation
     '''
-    pass
+    song = recommendation[0]
+    score = recommendation[1]
+    
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
+
+    song_summary = {
+        "title": song.get("title"),
+        "artist": song.get("artist"),
+        "genre": song.get("genre"),
+        "mood": song.get("mood"),
+        "energy": song.get("energy"),
+        "valence": song.get("valence"),
+    }
+    prompt = (
+            "Create a brief (one or two sentence) explanation of a song recommendation given \n"
+            "the user's preferences, song characteristics, and calculated score.\n\n"
+            f'Song: "{song_summary}"\n\n'
+            f'Song Score (0 to 100%): "{score}"\n\n'
+            f'User Preferences: "{user_prefs}"\n\n'
+        )
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model="gemini-3.5-flash-lite",
+        contents=prompt,
+    )
+
+    return response.text
+
+    
