@@ -1,0 +1,50 @@
+# System Diagram
+
+```mermaid
+
+flowchart TD
+    User(["User"])
+
+    subgraph DataLayer["Data Layer"]
+        Kaggle[(Kaggle Spotify Dataset)]
+        LoadSongs["load_songs()"]
+        SongDB[(Song Database)]
+        Kaggle --> LoadSongs --> SongDB
+    end
+
+    subgraph ProfileCreation["User Profile Creation"]
+        InputChoice{"Manual or describe mood?"}
+        ManualForm["Manual preference form\n(genre, mood, energy, tempo, ...)"]
+        MoodText["Free-text mood description"]
+        TextToProfile{{"text_to_profile()\n(LLM call)"}}
+        UserProfile["User Profile (dict)"]
+
+        InputChoice -->|Manual| ManualForm --> UserProfile
+        InputChoice -->|Describe mood in words| MoodText --> TextToProfile --> UserProfile
+    end
+
+    subgraph Recommender["Recommendation Engine"]
+        RetrieveSongs["retrieve_candidates()\n retrieve a subset of songs"]
+        ScoreSong["score_song()\nscore each song vs. profile"]
+        RecommendSongs["recommend_songs()\nsort, take top-k"]
+        TopK["Top-K songs + scores + reasons"]
+
+        RetrieveSongs --> ScoreSong --> RecommendSongs --> TopK
+    end
+
+    subgraph ExplanationLayer["Explanation"]
+        ExplainLLM{{"generate_explanation()\n(LLM call)"}}
+        FriendlyOutput["Friendly explanation\n+ recommended songs"]
+        ExplainLLM --> FriendlyOutput
+    end
+
+    User --> InputChoice
+    SongDB --> RetrieveSongs
+    UserProfile --> RetrieveSongs
+    TopK --> ExplainLLM
+    FriendlyOutput --> User
+```
+
+Hexagon nodes (`text_to_profile()`, explanation generator) mark the two points where
+an LLM call replaces deterministic functional code — everything else in the
+pipeline is a pure function operating on plain dicts/lists.

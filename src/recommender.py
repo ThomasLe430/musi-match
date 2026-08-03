@@ -1,29 +1,6 @@
 import csv
 from typing import List, Dict, Tuple, Optional
 
-def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Loads songs from a CSV file
-    Required by src/main.py
-    """
-    songs = []
-    with open(csv_path, newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            songs.append({
-                "id": int(row["id"]),
-                "title": row["title"],
-                "artist": row["artist"],
-                "genre": row["genre"],
-                "mood": row["mood"],
-                "energy": float(row["energy"]),
-                "tempo_bpm": float(row["tempo_bpm"]),
-                "valence": float(row["valence"]),
-                "isInstrumental": row["isInstrumental"].strip().lower() == "true",
-                "duration": int(row["duration"]),
-            })
-    return songs
-
 # Weight given to each preference when scoring a song. Genre and mood are
 # weighted highest since "vibe" match matters most for a simple recommender;
 # weights sum to 1.0 so a song matching every preference scores exactly 1.0.
@@ -58,6 +35,46 @@ NUMERICAL_LABELS = {
     "tempo_bpm": "Tempo",
     "duration": "Duration",
 }
+
+def load_songs(csv_path: str) -> List[Dict]:
+    """
+    Loads songs from a CSV file
+    Required by src/main.py
+    """
+    songs = []
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            songs.append({
+                "id": int(row["id"]),
+                "title": row["title"],
+                "artist": row["artist"],
+                "genre": row["genre"],
+                "mood": row["mood"],
+                "energy": float(row["energy"]),
+                "tempo_bpm": float(row["tempo_bpm"]),
+                "valence": float(row["valence"]),
+                "isInstrumental": row["isInstrumental"].strip().lower() == "true",
+                "duration": int(row["duration"]),
+            })
+    return songs
+
+# TODO: Implement this function
+def text_to_profile(desc: str):
+    '''
+    Takes in a user's description of the song profile they have in mind
+    Text profile --> Converted to a UserProfile compatible with score_song
+    Required by retrieve_candidates
+    '''
+
+# TODO: Implement this function
+def retrieve_candidates(user_prefs: Dict):
+    '''
+    Retrieves a subset of songs from the database using a specific criteria
+    in order to increase efficiency 
+    Required by score_song()
+    '''
+    pass
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     """
@@ -117,7 +134,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Functional implementation of the recommendation logic.
-    Required by src/main.py
+    Required by generate_explanation() and src/main.py
     """
     scored = []
     for song in songs:
@@ -128,9 +145,9 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
     scored.sort(key=lambda item: item[1], reverse=True)
     return scored[:k]
 
-# TODO: Implement text_to_profile
-def text_to_profile(desc: str):
+# TODO: Implement
+def generate_explanation(songs: List[Tuple[Dict, float, str]]):
     '''
-    Takes in a user's description of the song profile they have in mind
-    Text profile --> Converted to a UserProfile compatible with score_song
+    LLM call to create a friendly explanation of the songs recommendation
     '''
+    pass
