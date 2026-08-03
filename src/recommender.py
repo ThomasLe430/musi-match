@@ -1,5 +1,65 @@
 import csv
+import json
+import os
 from typing import List, Dict, Tuple, Optional
+
+from dotenv import load_dotenv
+from google import genai
+from google.genai import types
+
+load_dotenv()
+
+# Vocabulary present in data/songs.csv. Grounding the LLM on these lets it map
+# free text onto values that will actually equality-match in score_song,
+# instead of inventing synonyms (e.g. "chilled out" -> "chill").
+# Sourced from the Kaggle Spotify dataset's track_genre values (normalized in
+# src/transform_kaggle_data.py). Every entry here has at least one matching
+# song in songs.csv — "lofi" and "synthwave" were dropped since Kaggle's
+# genre taxonomy doesn't include them (no songs.csv row can ever match),
+# which silently capped match scores and mis-steered the LLM in
+# text_to_profile toward genre values with zero matching data.
+KNOWN_GENRES = [
+    "acoustic", "afrobeat", "alt-rock", "alternative", "ambient", "anime",
+    "black-metal", "bluegrass", "blues", "brazil", "breakbeat", "british",
+    "cantopop", "chicago-house", "children", "chill", "classical", "club",
+    "comedy", "country", "dance", "dancehall", "death-metal", "deep-house",
+    "detroit-techno", "disco", "disney", "drum-and-bass", "dub", "dubstep",
+    "edm", "electro", "electronic", "emo", "folk", "forro", "french", "funk",
+    "garage", "german", "gospel", "goth", "grindcore", "groove", "grunge",
+    "guitar", "happy", "hard-rock", "hardcore", "hardstyle", "heavy-metal",
+    "hip-hop", "honky-tonk", "house", "idm", "indian", "indie", "indie pop",
+    "industrial", "iranian", "j-dance", "j-idol", "j-pop", "j-rock", "jazz",
+    "k-pop", "kids", "latin", "latino", "malay", "mandopop", "metal",
+    "metalcore", "minimal-techno", "mpb", "new-age", "opera", "pagode",
+    "party", "piano", "pop", "power-pop", "progressive-house", "psych-rock",
+    "punk", "punk-rock", "r&b", "reggae", "reggaeton", "rock", "rock-n-roll",
+    "rockabilly", "romance", "sad", "salsa", "samba", "sertanejo",
+    "show-tunes", "singer-songwriter", "ska", "sleep", "soul", "spanish",
+    "study", "swedish", "synth-pop", "tango", "techno", "trance",
+    "trip-hop", "turkish", "world",
+]
+# Sourced from the mood grid derived in src/transform_kaggle_data.py
+# (valence x energy tertile buckets), which is the only place moods come
+# from now since Kaggle has no mood column.
+KNOWN_MOODS = [
+    "happy", "chill", "intense", "energetic", "melancholic", "peaceful",
+    "relaxed", "moody",
+]
+
+PROFILE_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "artist": {"type": "STRING", "nullable": True},
+        "genre": {"type": "ARRAY", "items": {"type": "STRING"}, "nullable": True},
+        "mood": {"type": "ARRAY", "items": {"type": "STRING"}, "nullable": True},
+        "energy": {"type": "NUMBER", "nullable": True},
+        "valence": {"type": "NUMBER", "nullable": True},
+        "instrumental": {"type": "BOOLEAN", "nullable": True},
+        "tempo_bpm": {"type": "INTEGER", "nullable": True},
+        "duration": {"type": "INTEGER", "nullable": True},
+    },
+    "required": ["artist", "genre", "mood", "energy", "valence", "instrumental", "tempo_bpm", "duration"],
+}
 
 # Weight given to each preference when scoring a song. Genre and mood are
 # weighted highest since "vibe" match matters most for a simple recommender;
@@ -20,8 +80,8 @@ SCORE_WEIGHTS = {
 NUMERICAL_RANGES = {
     "energy": 1.0,
     "valence": 1.0,
-    "tempo_bpm": 115.0, # Hard coded as the max(bpm) - min(bpm) in songs.csv
-    "duration": 153.0, # Hard coded as the max(duration) - min(duration) in songs.csv
+    "tempo_bpm": 243.0, # Hard coded as the max(bpm) - min(bpm) in songs.csv
+    "duration": 5228.0, # Hard coded as the max(duration) - min(duration) in songs.csv
 }
 
 # If numerical features are scored above 0.7 --> Feature added
@@ -59,13 +119,54 @@ def load_songs(csv_path: str) -> List[Dict]:
             })
     return songs
 
-# TODO: Implement this function
-def text_to_profile(desc: str):
+def _clamp01(value: Optional[float]) -> Optional[float]:
+    if value is None:
+        return None
+    return max(0.0, min(1.0, float(value)))
+
+
+def text_to_profile(desc: str) -> Dict:
     '''
     Takes in a user's description of the song profile they have in mind
-    Text profile --> Converted to a UserProfile compatible with score_song
+    Text profile --> Converted to a user profile dict compatible with score_song
     Required by retrieve_candidates
     '''
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY environment variable is not set")
+
+    prompt = (
+        "Extract a music preference profile from this description:\n"
+        f'"{desc}"\n\n'
+        f"Known genres (prefer these when the description matches): {', '.join(KNOWN_GENRES)}\n"
+        f"Known moods (prefer these when the description matches): {', '.join(KNOWN_MOODS)}\n\n"
+        "energy and valence are floats from 0 (low) to 1 (high). "
+        "tempo_bpm is an integer beats-per-minute estimate. "
+        "duration is an integer number of seconds. "
+        "Set a field to null if the description gives no signal for it."
+    )
+
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model="gemini-3.5-flash-lite",
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            response_mime_type="application/json",
+            response_schema=PROFILE_SCHEMA,
+        ),
+    )
+    raw = json.loads(response.text)
+
+    return {
+        "artist": raw.get("artist"),
+        "genre": raw.get("genre"),
+        "mood": raw.get("mood"),
+        "energy": _clamp01(raw.get("energy")),
+        "valence": _clamp01(raw.get("valence")),
+        "instrumental": raw.get("instrumental"),
+        "tempo_bpm": int(raw["tempo_bpm"]) if raw.get("tempo_bpm") is not None else None,
+        "duration": int(raw["duration"]) if raw.get("duration") is not None else None,
+    }
 
 # TODO: Implement this function
 def retrieve_candidates(user_prefs: Dict):

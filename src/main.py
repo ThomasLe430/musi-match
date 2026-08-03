@@ -1,15 +1,4 @@
-"""
-Command line runner for the Music Recommender Simulation.
-
-This file helps you quickly run and test your recommender.
-
-You will implement the functions in recommender.py:
-- load_songs
-- score_song
-- recommend_songs
-"""
-
-from recommender import load_songs, score_song, recommend_songs
+from recommender import load_songs, text_to_profile, score_song, recommend_songs
 
 
 def main() -> None:
@@ -60,7 +49,13 @@ def main() -> None:
                   "tempo_bpm": None,
                   "duration": None}
     
-    user_list = [happy_pop_user, chill_lofi_user, asian_music_enjoyer, intense_rock_user, omnivore_user]
+    moodTest = "I do not care what artist, but I am in a chill mood and would love a good lofi " \
+    "or jazz song to do homework to. The song should be slow, short, and preferably instrumental. "
+
+    print("Testing Text to Profile Generation")
+    generated_profile = text_to_profile(moodTest)
+    
+    user_list = [happy_pop_user, chill_lofi_user, asian_music_enjoyer, intense_rock_user, omnivore_user, generated_profile]
     
     for user in user_list:
         recommendations = recommend_songs(user, songs, k=5)
