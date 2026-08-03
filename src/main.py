@@ -14,7 +14,7 @@ from recommender import load_songs, score_song, recommend_songs
 
 def main() -> None:
     # Returns a list of dictionaries representing each song
-    songs = load_songs("ai110-module3show-musicrecommendersimulation-starter/data/songs.csv") 
+    songs = load_songs("data/songs.csv") 
     
     # Starter example profile (updated from original)
     happy_pop_user = {"artist":"Taylor Swift",

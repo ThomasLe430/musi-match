@@ -1,55 +1,5 @@
 import csv
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
-
-@dataclass
-class Song:
-    """
-    Represents a song and its attributes.
-    Required by tests/test_recommender.py
-    """
-    id: int
-    title: str
-    artist: str
-    genre: str
-    mood: str
-    energy: float
-    tempo_bpm: float
-    valence: float
-    is_instrumental: bool
-    duration: int
-
-@dataclass
-class UserProfile:
-    """
-    Represents a user's taste preferences.
-    Required by tests/test_recommender.py
-    """
-    favorite_artist: str
-    favorite_genres: List[str]
-    favorite_moods: List[str]
-    target_energy: float
-    target_valence: float
-    target_bpm: Optional[float] = None
-    likes_instrumental: Optional[bool] = None
-    target_duration: Optional[int] = None
-    
-
-class Recommender:
-    """
-    OOP implementation of the recommendation logic.
-    Required by tests/test_recommender.py
-    """
-    def __init__(self, songs: List[Song]):
-        self.songs = songs
-
-    def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
-
-    def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
 
 def load_songs(csv_path: str) -> List[Dict]:
     """
@@ -177,3 +127,10 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
 
     scored.sort(key=lambda item: item[1], reverse=True)
     return scored[:k]
+
+# TODO: Implement text_to_profile
+def text_to_profile(desc: str):
+    '''
+    Takes in a user's description of the song profile they have in mind
+    Text profile --> Converted to a UserProfile compatible with score_song
+    '''
