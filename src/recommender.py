@@ -14,10 +14,7 @@ load_dotenv()
 # instead of inventing synonyms (e.g. "chilled out" -> "chill").
 # Sourced from the Kaggle Spotify dataset's track_genre values (normalized in
 # src/transform_kaggle_data.py). Every entry here has at least one matching
-# song in songs.csv — "lofi" and "synthwave" were dropped since Kaggle's
-# genre taxonomy doesn't include them (no songs.csv row can ever match),
-# which silently capped match scores and mis-steered the LLM in
-# text_to_profile toward genre values with zero matching data.
+# song in songs.csv.
 KNOWN_GENRES = [
     "acoustic", "afrobeat", "alt-rock", "alternative", "ambient", "anime",
     "black-metal", "bluegrass", "blues", "brazil", "breakbeat", "british",
@@ -167,15 +164,6 @@ def text_to_profile(desc: str) -> Dict:
         "tempo_bpm": int(raw["tempo_bpm"]) if raw.get("tempo_bpm") is not None else None,
         "duration": int(raw["duration"]) if raw.get("duration") is not None else None,
     }
-
-# TODO: Implement this function
-def retrieve_candidates(user_prefs: Dict):
-    '''
-    Retrieves a subset of songs from the database using a specific criteria
-    in order to increase efficiency 
-    Required by score_song()
-    '''
-    pass
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
     """

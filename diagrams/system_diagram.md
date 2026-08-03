@@ -7,7 +7,7 @@ flowchart TD
 
     subgraph DataLayer["Data Layer"]
         Kaggle[(Kaggle Spotify Dataset)]
-        LoadSongs["load_songs()"]
+        LoadSongs["transform_kaggle_data.py()"]
         SongDB[(Song Database)]
         Kaggle --> LoadSongs --> SongDB
     end
@@ -24,12 +24,11 @@ flowchart TD
     end
 
     subgraph Recommender["Recommendation Engine"]
-        RetrieveSongs["retrieve_candidates()\n retrieve a subset of songs"]
         ScoreSong["score_song()\nscore each song vs. profile"]
         RecommendSongs["recommend_songs()\nsort, take top-k"]
         TopK["Top-K songs + scores + reasons"]
 
-        RetrieveSongs --> ScoreSong --> RecommendSongs --> TopK
+        ScoreSong --> RecommendSongs --> TopK
     end
 
     subgraph ExplanationLayer["Explanation"]
@@ -39,8 +38,8 @@ flowchart TD
     end
 
     User --> InputChoice
-    SongDB --> RetrieveSongs
-    UserProfile --> RetrieveSongs
+    SongDB --> ScoreSong
+    UserProfile --> ScoreSong
     TopK --> ExplainLLM
     FriendlyOutput --> User
 ```
