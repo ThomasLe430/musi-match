@@ -1,25 +1,22 @@
 # System Diagram
 
 ```mermaid
-
 flowchart TD
     User(["User"])
 
     subgraph DataLayer["Data Layer"]
         Kaggle[(Kaggle Spotify Dataset)]
-        LoadSongs["transform_kaggle_data.py()"]
+        LoadSongs["transform_kaggle_data()"]
         SongDB[(Song Database)]
         Kaggle --> LoadSongs --> SongDB
     end
 
     subgraph ProfileCreation["User Profile Creation"]
-        InputChoice{"Manual or describe mood?"}
-        ManualForm["Manual preference form\n(genre, mood, energy, tempo, ...)"]
+        InputChoice{"Mood Description"}
         MoodText["Free-text mood description"]
         TextToProfile{{"text_to_profile()\n(LLM call)"}}
         UserProfile["User Profile (dict)"]
 
-        InputChoice -->|Manual| ManualForm --> UserProfile
         InputChoice -->|Describe mood in words| MoodText --> TextToProfile --> UserProfile
     end
 
@@ -28,7 +25,7 @@ flowchart TD
         RecommendSongs["recommend_songs()\nsort, take top-k"]
         TopK["Top-K songs + scores + reasons"]
 
-        ScoreSong --> RecommendSongs --> TopK
+         ScoreSong --> RecommendSongs --> TopK
     end
 
     subgraph ExplanationLayer["Explanation"]
@@ -44,6 +41,6 @@ flowchart TD
     FriendlyOutput --> User
 ```
 
-Hexagon nodes (`text_to_profile()`, explanation generator) mark the two points where
+Hexagon nodes (`text_to_profile()`, `generate_explanation`) marks where
 an LLM call replaces deterministic functional code — everything else in the
 pipeline is a pure function operating on plain dicts/lists.

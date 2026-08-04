@@ -1,68 +1,47 @@
-# 🎧 Model Card: Music Recommender Simulation
+# 🎧 Model Card: Music Recommender
 
 ## 1. Model Name  
 
-**SongSeeker 1.0**
+**MusiMatch**
 ---
 
 ## 2. Intended Use  
-
-Describe what your recommender is designed to do and who it is for. 
-
-Prompts:  
-
-- What kind of recommendations does it generate  
-- What assumptions does it make about the user  
-- Is this for real users or classroom exploration  
-
-The recommender takes in user song preferences spanning favorite artist, genre, mood, and various musical qualities (valence, energy, instrumental, etc) and gives the user song recommendations based on how similar the songs are to the users preference. The recommender assumes the user has a strong preference for certain genres and moods and recommends accordingly. The model is intended for classroom exploration and has a limited scope in songs it can recommend, but may be expanded later for personal use.
+The model is meant to take in natural language explanation of the user's musical mood and output a list of recommended songs + explanations. The model is intended for classroom and personal use.
 
 ---
 
 ## 3. How the Model Works  
 
-The features of the songs that are used include artist, genre, mood, energy, valence, tempo, duration, and if the song is instrumental. The user can indicate their preference for any of these features, where they can choose their favorite artist and list out multiple genres/moods they enjoy. The remaining features are numerical. The model turns these preferences into scores by comparing the song's categorical features (artist, genre, mood) to the song's features. In contrast, the numerical features use a distance metric to calculate a similarity score. 
+First, the user is prompted to enter a textual description of the musical mood they desire (stating preferences in artist, genre, mood, energy etc). The AI (Gemini Flash 3.5 Lite) converts the text into a dictionary that is compatible with the recommendation algorithm. Then, the dictionary represented the user profile is used to search the song database for the top-k songs with the highest score. The recommended songs and scores are then fed back into the AI to generate a friendly explanation of why the recommended songs are chosen.
 
 ---
 
 ## 4. Data  
- 
-There are 20 songs in the catalog and the genres represented include pop, rock, lofi, jazz, ambient, electronic, classical, k-pop, j-rock, synthwave, indie pop, and world. The moods represented include happy, chill, intense, energetic, melancholic, peaceful, and relaxed. The songs added mainly reflect the author's personal taste (k-pop, j-rock, and video game songs). Some notable genres and moods not in the dataset include: hip hop, rap, R&B, ballad, country, and sad songs. 
+The data is sourced from https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/data. The data was cleaned and transformed into songs.csv. 
 
 ---
 
 ## 5. Strengths  
 
-The system works well when the user specifies a small list of favorite genres and moods. Since the recommender prioritizes these features the most, the recommendation provided will be strong. The scoring captures how genre and mood can better capture musical vibes over specific qualities like tempo or duation. For instance, if a user specifies they enjoy rock songs, the system will most likely recommend a few rock songs to the user, as well as good mood/energy matches. 
+The model exceeds at finding strong artist, genre, and mood matches. If the user provides enough details, the model recommends with confidence. Furthermore, the model is simply to use and the explanations it generates are easy to understand.  
 
 ---
 
 ## 6. Limitations and Bias 
-
-The system biases towards genre and mood over other musical qualities, overfitting to generic music genres such as pop and rock. This causes adjacent genres to be missed despite having similar musical qualities (ex: rock vs j-rock or lofi vs ambient). Additionally, the system breaks down if a user specifies multiple genres or moods they enjoy. If a user's musical preferences spans all genres present in the dataset, then the recommendation system has a harder time finding stronger matches. 
-
----
-
-## 7. Evaluation  
-
-I evaluated the system by creating multiple user profiles spanning different musical tastes. Each profile prioritized a certain genre: pop, lofi, k-pop, and rock. What surprised me about the tests was that it was super confident for a lot of matches (above 80%) and struck a good balance between genre and mood recommendations. Sometimes I expected a song to rank higher because of its genre, but other songs having a better mood and other characteristics made it rank higher than the genre-consistent song. For example, take the "generic pop enjoyer" versus "asian music enjoyer" profiles. K-pop songs from BTS and NewJeans fell into both of those recommendations due to their mood and valence, even if the genre didn't necessarily match for the "generic pop enjoyer." 
+The model prioritzes genre, meaning that the songs that the system recommends could be limited in scope. For example, the user could indicate that they want a rock song, but the system might ignore j-rock, alt rock, or punk rock - genres that are adjacent but ignored because they wall into a different category. The model also has no built in randomness, so recommendations might be repetitive to the user. 
 
 ---
 
-## 8. Future Work  
-
-I would expand the dataset to include a larger diversity of songs. Additionally, I would allow the user to indicate songs they have previously listened to. This would allow the system to automatically compute user preferences, especially for numerical features such as tempo and duration. Recommendation systems don't really ask for your favorite tempo or duration - so it would make sense for these to be learned features from a history of song listening. Furthermore, I would try to improve diversity by injecting randomness into the recommendation. Instead of being deterministic, add probability to make recommendations different every time. 
+## 7. Reliability and Evaluation  
+In short, I tested if similar inputs consistently led to similar outputs in the profile creation phase. If the user describes the same musical profile, but with slightly different wording, the generated profiles should be similar. To test this (in reliability.py), I created functions to measure similarity and streamlined the process of generating profiles repeatedly.The similarity scores are the main metric for evaluation -- higher similarity means same profiles are leading the the same recommendations, a consistency that is crucial in an AI system like this. The resulting score of 92.5% in reliability_report.json demonstrates how the system is reliable given ethis framework. 
 
 ---
 
-## 9. Personal Reflection  
+## 8. AI Collaboration  
+Collaboration with AI (Claude for coding, Gemini for text parsing) focused on mutual understanding and preserving my vision for the project. One example where the AI gave a helpful suggestion was when I was developing a function to call an API to generate a user profile from text input. To be honest, I had no idea where to start because it was my first time making an API call to an external model and I wasn't sure which model to even use. Claude presented me with options to use and helped with the prompting process. 
+One example where AI gave a flawed suggestion was when I was designing the reliability system. When I first came up with the plan, the AI wanted to go overboard - guardrails, evaluation, and reliability all in one go. I had to push back and say that I wanted to focus on reliability first before implementing guardrails to take development one step at a time. Overall, the AI tends to be over-ambitious and I had many occasions where I had to push back and double check my understanding.
 
-A few sentences about your experience.  
+---
 
-Prompts:  
-
-- What you learned about recommender systems  
-- Something unexpected or interesting you discovered  
-- How this changed the way you think about music recommendation apps  
-
-I learned that recommender systems are oddly complex, in the sense of how they need to quantify musical features like energy or valence. While my system has a rating for these numerical feautres, real recommender systems often use machine learning to compute more abstract representations of songs. Additionally, these systems have to balance content recommendation as well as collaborative recommendation and I can see how its difficult to strike the perfect balance.
+## 9. Final Reflection  
+Ultimately, developing this model has showed me that AI is a powerful tool that can allow me to focus on overall system design + reliability, rather than tricky implementation. Although I do enjoy implementing things myself, I am confident that without AI this project would've taken me significantly longer. Some careful navigation was required to ensure that the AI didn't over extend and kept my vision intact. 
