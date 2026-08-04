@@ -1,0 +1,133 @@
+{
+  "repeats": 3,
+  "per_description": [
+    {
+      "description": "I do not care what artist, but I am in a chill mood and would love a good lofi or jazz song to do homework to. The song should be slow, short, and preferably instrumental.",
+      "profiles": [
+        {
+          "artist": null,
+          "genre": ["chill", "jazz", "study"],
+          "mood": ["chill", "peaceful", "relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 70,
+          "duration": 150
+        },
+        {
+          "artist": null,
+          "genre": ["study", "chill","jazz"],
+          "mood": ["chill", "peaceful","relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 70,
+          "duration": 150
+        },
+        {
+          "artist": null,
+          "genre": ["chill", "jazz", "study"],
+          "mood": ["chill", "peaceful", "relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 70,
+          "duration": 150
+        }
+      ],
+      "field_scores": {
+        "genre": 1.0,
+        "mood": 1.0,
+        "energy": 1.0,
+        "valence": 1.0
+      },
+      "overall_score": 1.0
+    },
+    {
+      "description": "I'm studying and want something mellow and lo-fi or jazzy to relax to. Doesn't matter who made it, just keep it short, slow, and mostly instrumental.",
+      "profiles": [
+        {
+          "artist": null,
+          "genre": ["study","chill", "jazz"],
+          "mood": ["relaxed", "peaceful"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 80,
+          "duration": 180
+        },
+        {
+          "artist": null,
+          "genre": ["study", "chill", "jazz", "ambient"],
+          "mood": ["relaxed", "peaceful", "chill"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 75,
+          "duration": 180
+        },
+        {
+          "artist": null,
+          "genre": ["study", "chill", "jazz"],
+          "mood": ["relaxed", "peaceful"],
+          "energy": 0.2,
+          "valence": 0.4,
+          "instrumental": true,
+          "tempo_bpm": 75,
+          "duration": 180
+        }
+      ],
+      "field_scores": {
+        "genre": 0.8333,
+        "mood": 0.7778,
+        "energy": 1.0,
+        "valence": 0.9333
+      },
+      "overall_score": 0.8861
+    },
+    {
+      "description": "Any artist is fine. I want a calm, laid-back track for homework - jazz or lofi vibes, on the shorter and slower side, ideally with no vocals.",
+      "profiles": [
+        {
+          "artist": null,
+          "genre": ["jazz", "chill", "study"],
+          "mood": ["chill", "peaceful", "relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 80,
+          "duration": 180
+        },
+        {
+          "artist": null,
+          "genre": ["jazz", "chill", "study"],
+          "mood": ["peaceful", "relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 80,
+          "duration": 180
+        },
+        {
+          "artist": null,
+          "genre": ["jazz","chill"],
+          "mood": ["peaceful", "relaxed"],
+          "energy": 0.2,
+          "valence": 0.5,
+          "instrumental": true,
+          "tempo_bpm": 80,
+          "duration": 180
+        }
+      ],
+      "field_scores": {
+        "genre": 0.7778,
+        "mood": 0.7778,
+        "energy": 1.0,
+        "valence": 1.0
+      },
+      "overall_score": 0.8889
+    }
+  ],
+  "overall_score": 0.925,
+  "generated_at": "2026-08-03T05:37:21.079859+00:00"
+}

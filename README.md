@@ -1,4 +1,5 @@
 # 🎧 MusiMatch 🎧
+Created by Thomas Le.
 
 ## Original Project
 MusiMatch is an extension of CodePath AI110's Music Recommender Simulation. The goal of the original project is to gain familiarity with content-based retrieval and how data like songs can be quantified into feature vectors. 
